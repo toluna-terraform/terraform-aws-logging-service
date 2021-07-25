@@ -26,3 +26,7 @@ data "aws_iam_policy_document" "td_role_policy" {
     ]
   }
 }
+
+data "aws_security_group" "selected" {
+  name = local.security_group
+}

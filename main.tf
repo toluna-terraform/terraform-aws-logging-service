@@ -1,3 +1,7 @@
+locals {
+  security_group = "sgr-${var.env_name}-dc-internal"
+}
+
 resource "aws_ecs_cluster" "logstash_cluster" {
   name = "ecs-${var.env_name}-logstash"
 
@@ -61,19 +65,19 @@ resource "aws_lb" "logstash_lb" {
   name               = "nlb-${var.env_name}-logstash"
   internal           = true
   load_balancer_type = "network"
-  security_groups    = [aws_security_group.lb_sg.id]
+  security_groups    = [data.aws_security_group.selected.id]
   #subnets            = aws_subnet.public.*.id
   subnets            = var.subnets
 
   enable_deletion_protection = true
 
-  access_logs {
-    prefix  = "logstash_lb"
-    enabled = true
-  }
+  #access_logs {
+  #  prefix  = "logstash_lb"
+ #   enabled = true
+ # }
 
   tags = {
-    Environment = ""
+    Environment = "${var.env_name}"
   }
 }
 
@@ -102,7 +106,7 @@ resource "aws_lb_listener" "logstash_lb_listener_8080" {
 }
 
 resource "aws_iam_role" "task_execution_role" {
-  name               = "${env_name}-logstash-role"
+  name               = "${var.env_name}-logstash-role"
   assume_role_policy = data.aws_iam_policy_document.td_assume_role_policy.json
 }
 
@@ -111,3 +115,4 @@ resource "aws_iam_role_policy" "td_role_policy" {
   role   = aws_iam_role.task_execution_role.id
   policy = data.aws_iam_policy_document.td_role_policy.json
 }
+

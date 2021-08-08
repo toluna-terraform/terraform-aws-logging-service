@@ -1,26 +1,45 @@
 locals {
   security_group = "sgr-${var.env_name}-dc-internal"
   load_balancers = [{"target_group_arn":"${data.aws_lb_target_group.tg-8080.arn}","container_name":"logstash","container_port":8080},{"target_group_arn":"${data.aws_lb_target_group.tg-5140.arn}","container_name":"logstash","container_port":5140}]
+  service_name   = "${var.env_name}-logging"
+  task_definition_family = "logstash"
 }
 
 resource "aws_ecs_cluster" "logging_cluster" {
-  name = "ecs-${var.env_name}-logging"
+  name = "ecs-${local.service_name}"
   capacity_providers = ["FARGATE"]
 
   setting {
     name  = "containerInsights"
     value = "enabled"
   }
+  tags = merge(
+    var.tags,
+    map(
+      "Name", "${local.service_name}",
+      "environment", var.env_name,
+      "application_role", "logging",
+      "created_by", "terraform"
+    )
+  )
 }
 
 resource "aws_ecs_service" "logging_service" {
-  name            = "ecs-${var.env_name}-logging-service"
+  name            = "ecs-${local.service_name}-service"
   cluster         = aws_ecs_cluster.logging_cluster.id
   task_definition = "arn:aws:ecs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:task-definition/td-${var.env_name}-logstash:${data.aws_ecs_task_definition.logstash.revision}"
   desired_count   = 2
   launch_type = "FARGATE"
   depends_on      = [aws_iam_role_policy.td_role_policy]
-
+  tags = merge(
+    var.tags,
+    map(
+      "Name", "${local.service_name}",
+      "environment", var.env_name,
+      "application_role", "logging",
+      "created_by", "terraform"
+    )
+  )
   network_configuration {
     security_groups  = [data.aws_security_group.selected.id]
     subnets          = var.subnets
@@ -38,32 +57,55 @@ resource "aws_ecs_service" "logging_service" {
 }
 
 resource "aws_lb_target_group" "logging_tg" {
-  name        = "tg-${var.env_name}-logging"
+  name        = "tg-${local.service_name}"
   port        = 5140
   protocol    = "TCP_UDP"
   target_type = "ip"
   vpc_id      = var.vpc_id
+  tags = merge(
+    var.tags,
+    map(
+      "Name", "${local.service_name}",
+      "environment", var.env_name,
+      "application_role", "logging",
+      "created_by", "terraform"
+    )
+  )
 }
 
 resource "aws_lb_target_group" "logging_http_tg" {
-  name        = "tg-${var.env_name}-logging-http"
+  name        = "tg-${local.service_name}-http"
   port        = 8080
   protocol    = "TCP_UDP"
   target_type = "ip"
   vpc_id      = var.vpc_id
+  tags = merge(
+    var.tags,
+    map(
+      "Name", "${local.service_name}",
+      "environment", var.env_name,
+      "application_role", "logging",
+      "created_by", "terraform"
+    )
+  )
 }
 
 
 resource "aws_lb" "logging_lb" {
-  name               = "nlb-${var.env_name}-logging"
+  name               = "nlb-${local.service_name}"
   internal           = true
   load_balancer_type = "network"
   subnets            = var.subnets
   enable_deletion_protection = false
-
-  tags = {
-    Environment = "${var.env_name}"
-  }
+  tags = merge(
+    var.tags,
+    map(
+      "Name", "${local.service_name}",
+      "environment", var.env_name,
+      "application_role", "logging",
+      "created_by", "terraform"
+    )
+  )
 }
 
 resource "aws_lb_listener" "logging_lb_listener_5140" {
@@ -89,7 +131,7 @@ resource "aws_lb_listener" "logging_lb_listener_8080" {
 }
 
 resource "aws_iam_role" "task_execution_role" {
-  name               = "${var.env_name}-logging-role"
+  name               = "${local.service_name}-role"
   assume_role_policy = data.aws_iam_policy_document.td_assume_role_policy.json
 }
 
@@ -107,3 +149,15 @@ resource "aws_route53_record" "logging_service_record" {
   records = [aws_lb.logging_lb.dns_name]
 }
 
+resource "aws_ecs_task_definition" "service_td" {
+  count = var.task_definition_already_exists ? 0 : 1
+  family                   = "td-${var.env_name}-${local.task_definition_family}"
+  container_definitions    = templatefile("${path.module}/templates/logstash.json.tpl",{ ENV_NAME = var.env_name, SHORT_ENV_NAME = var.short_env_name }) 
+  volume {
+    name      = "service-storage"
+    host_path = "/ecs/service-storage"
+  }
+  lifecycle {
+    ignore_changes = all
+   }
+}

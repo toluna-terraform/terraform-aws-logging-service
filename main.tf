@@ -41,7 +41,7 @@ resource "aws_ecs_service" "logging_service" {
     )
   )
   network_configuration {
-    security_groups  = [data.aws_security_group.selected.id]
+    security_groups  = [data.aws_security_group.selected.id,aws_security_group.logging_sg.id]
     subnets          = var.subnets
   }
 
@@ -161,3 +161,60 @@ resource "aws_ecs_task_definition" "service_td" {
     ignore_changes = all
    }
 }
+
+
+resource "aws_security_group" "logging_sg" {
+  name        = local.service_name
+  description = "Security-Group for Logging service."
+  vpc_id      = var.vpc_id
+
+ 
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = merge(
+    var.tags,
+    map(
+      "Name", local.service_name,
+      "itwp-environment", var.env_name,
+      "dc", "sg_test",
+      "itwp-application_role", "network",
+      "created_by", "terraform"
+    )
+  )
+}
+
+resource "aws_security_group_rule" "tcp_5140" {
+  type              = "ingress"
+  from_port         = 5140
+  to_port           = 5140
+  protocol          = "tcp"
+  cidr_blocks       = [data.aws_vpc.selected.cidr_block]
+  security_group_id = aws_security_group.logging_sg.id
+  description       = "Allow 5140 TCP from VPC" 
+}
+
+resource "aws_security_group_rule" "udp_5140" {
+  type              = "ingress"
+  from_port         = 5140
+  to_port           = 5140
+  protocol          = "udp"
+  cidr_blocks       = [data.aws_vpc.selected.cidr_block]
+  security_group_id = aws_security_group.logging_sg.id
+  description       = "Allow 5140 UDP from VPC" 
+}
+
+resource "aws_security_group_rule" "tcp_8080" {
+  type              = "ingress"
+  from_port         = 8080
+  to_port           = 8080
+  protocol          = "tcp"
+  cidr_blocks       = [data.aws_vpc.selected.cidr_block]
+  security_group_id = aws_security_group.logging_sg.id
+  description       = "Allow 8080 TCP from VPC" 
+}
+

@@ -9,4 +9,6 @@ Toluna [Terraform module](https://registry.terraform.io/modules/toluna-terraform
   vpc_id = module.vpc.vpc_id
   subnets = module.vpc.private_subnet_ids
   hosted_zone = "___.tolunainsights-internal.com"
+  tags = local.tags
+  task_definition_already_exists = true
 }```

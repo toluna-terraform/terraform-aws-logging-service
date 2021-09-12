@@ -15,7 +15,7 @@ resource "aws_ecs_cluster" "logging_cluster" {
   }
   tags = merge(
     var.tags,
-    map(
+    tomap(
       "Name", "${local.service_name}",
       "environment", var.env_name,
       "application_role", "logging",
@@ -33,7 +33,7 @@ resource "aws_ecs_service" "logging_service" {
   depends_on      = [aws_iam_role_policy.td_role_policy]
   tags = merge(
     var.tags,
-    map(
+    tomap(
       "Name", "${local.service_name}",
       "environment", var.env_name,
       "application_role", "logging",
@@ -64,7 +64,7 @@ resource "aws_lb_target_group" "logging_tg" {
   vpc_id      = var.vpc_id
   tags = merge(
     var.tags,
-    map(
+    tomap(
       "Name", "${local.service_name}",
       "environment", var.env_name,
       "application_role", "logging",
@@ -81,7 +81,7 @@ resource "aws_lb_target_group" "logging_http_tg" {
   vpc_id      = var.vpc_id
   tags = merge(
     var.tags,
-    map(
+    tomap(
       "Name", "${local.service_name}",
       "environment", var.env_name,
       "application_role", "logging",
@@ -99,7 +99,7 @@ resource "aws_lb" "logging_lb" {
   enable_deletion_protection = false
   tags = merge(
     var.tags,
-    map(
+    tomap(
       "Name", "${local.service_name}",
       "environment", var.env_name,
       "application_role", "logging",
@@ -178,7 +178,7 @@ resource "aws_security_group" "logging_sg" {
 
   tags = merge(
     var.tags,
-    map(
+    tomap(
       "Name", local.service_name,
       "itwp-environment", var.env_name,
       "dc", "sg_test",

@@ -16,10 +16,10 @@ resource "aws_ecs_cluster" "logging_cluster" {
   tags = merge(
     var.tags,
     tomap({
-      "Name", "${local.service_name}",
-      "environment", var.env_name,
-      "application_role", "logging",
-      "created_by", "terraform"
+      "Name" = "${local.service_name}",
+      "environment" = "${var.env_name}",
+      "application_role" = "logging",
+      "created_by" = "terraform"
     })
   )
 }
@@ -34,10 +34,10 @@ resource "aws_ecs_service" "logging_service" {
   tags = merge(
     var.tags,
     tomap({
-      "Name", "${local.service_name}",
-      "environment", var.env_name,
-      "application_role", "logging",
-      "created_by", "terraform"
+      "Name" = "${local.service_name}",
+      "environment" = "${var.env_name}",
+      "application_role" = "logging",
+      "created_by" = "terraform"
     })
   )
   network_configuration {
@@ -65,10 +65,10 @@ resource "aws_lb_target_group" "logging_tg" {
   tags = merge(
     var.tags,
     tomap({
-      "Name", "${local.service_name}",
-      "environment", var.env_name,
-      "application_role", "logging",
-      "created_by", "terraform"
+      "Name" = "${local.service_name}",
+      "environment" = "${var.env_name}",
+      "application_role" = "logging",
+      "created_by" = "terraform"
     })
   )
 }
@@ -82,10 +82,10 @@ resource "aws_lb_target_group" "logging_http_tg" {
   tags = merge(
     var.tags,
     tomap({
-      "Name", "${local.service_name}",
-      "environment", var.env_name,
-      "application_role", "logging",
-      "created_by", "terraform"
+      "Name" = "${local.service_name}",
+      "environment" = "${var.env_name}",
+      "application_role" = "logging",
+      "created_by" = "terraform"
     })
   )
 }
@@ -100,10 +100,10 @@ resource "aws_lb" "logging_lb" {
   tags = merge(
     var.tags,
     tomap({
-      "Name", "${local.service_name}",
-      "environment", var.env_name,
-      "application_role", "logging",
-      "created_by", "terraform"
+      "Name" = "${local.service_name}",
+      "environment" = "${var.env_name}",
+      "application_role" = "logging",
+      "created_by" = "terraform"
     })
   )
 }
@@ -179,11 +179,11 @@ resource "aws_security_group" "logging_sg" {
   tags = merge(
     var.tags,
     tomap({
-      "Name", local.service_name,
-      "itwp-environment", var.env_name,
-      "dc", "sg_test",
-      "itwp-application_role", "network",
-      "created_by", "terraform"
+      "Name" = "${local.service_name}",
+      "itwp-environment" = "${var.env_name}",
+      "dc" = "sg_test",
+      "itwp-application_role" = "network",
+      "created_by" = "terraform"
     })
   )
 }

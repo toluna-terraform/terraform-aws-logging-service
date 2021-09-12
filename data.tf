@@ -35,7 +35,7 @@ data "aws_ecs_task_definition" "logstash" {
   task_definition = "td-${var.env_name}-logstash"
 }
 
-data "aws_security_group" "dc_internal" {
+data "aws_security_group" "selected" {
   name = local.security_group
 }
 

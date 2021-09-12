@@ -2,7 +2,8 @@
 Toluna [Terraform module](https://registry.terraform.io/modules/toluna-terraform/logging-service/aws/latest), which creates Logstash service on ECS Fargate.
 
 ## Usage
-```module "logging_service"{
+```
+module "logging_service"{
   source = "toluna-terraform/logging-service/aws"
   version = "~>0.0.2"
   env_name = local.main.env_name

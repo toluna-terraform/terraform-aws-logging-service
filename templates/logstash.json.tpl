@@ -20,27 +20,28 @@
         "options": {
             "awslogs-group": "/ecs/td-${ENV_NAME}-logstash",
             "awslogs-region": "us-east-1",
+            "awslogs-create-group": "true",
             "awslogs-stream-prefix": "ecs"
           }
         },
-    "memoryReservation": 128, 
     "essential": true, 
-    "volumesFrom": [],
     "command": [],
     "entryPoint": [],
+    "requiresCompatibilities": ["FARGATE"],
     "environment": [
         {
           "name": "ENV_NAME",
           "value": "${ENV_NAME}"
         },
         {
-          "name": "LOGSTASH_HOST",
+          "name": "ES_URL",
           "value" : "logstash.${SHORT_ENV_NAME}.tolunainsights-internal.com"
         }
       ],
     "privileged": false
 }
 ]
+ 
 
 
 

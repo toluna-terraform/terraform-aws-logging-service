@@ -153,8 +153,8 @@ resource "aws_route53_record" "logging_service_record" {
 resource "aws_ecs_task_definition" "service_td" {
   count                    = var.task_definition_already_exists ? 0 : 1
   network_mode             = "awsvpc"
-  cpu                      = 2048
-  memory                   = 16384
+  cpu                      = 4096
+  memory                   = 20480
   family                   = "td-${var.env_name}-${local.task_definition_family}"
   requires_compatibilities = ["FARGATE"]
   container_definitions    = templatefile("${path.module}/templates/logstash.json.tpl",{ ENV_NAME = var.env_name, SHORT_ENV_NAME = var.short_env_name }) 

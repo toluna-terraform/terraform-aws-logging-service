@@ -32,10 +32,6 @@
         {
           "name": "ENV_NAME",
           "value": "${ENV_NAME}"
-        },
-        {
-          "name": "ES_URL",
-          "value" : "logstash.${SHORT_ENV_NAME}.tolunainsights-internal.com"
         }
       ],
     "privileged": false

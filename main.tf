@@ -1,12 +1,13 @@
 locals {
   security_group = "sgr-${var.env_name}-dc-internal"
   load_balancers = [{"target_group_arn":"${data.aws_lb_target_group.tg-8080.arn}","container_name":"logstash","container_port":8080},{"target_group_arn":"${data.aws_lb_target_group.tg-5140.arn}","container_name":"logstash","container_port":5140}]
-  service_name   = "${var.env_name}-logging"
+  service_name   = "${var.env_name}-logstash"
+  ecs_name   = "${var.env_name}-devops-tools"
   task_definition_family = "logstash"
 }
 
 resource "aws_ecs_cluster" "logging_cluster" {
-  name = "ecs-${local.service_name}"
+  name = "ecs-${local.ecs_name}"
   capacity_providers = ["FARGATE"]
 
   setting {
@@ -28,8 +29,8 @@ resource "aws_ecs_service" "logging_service" {
   name            = "ecs-${local.service_name}-service"
   cluster         = aws_ecs_cluster.logging_cluster.id
   task_definition = "arn:aws:ecs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:task-definition/td-${var.env_name}-logstash:${data.aws_ecs_task_definition.logstash.revision}"
-  desired_count   = 2
-  launch_type = "FARGATE"
+  desired_count   = 1
+  launch_type     = "FARGATE"
   depends_on      = [aws_iam_role_policy.td_role_policy]
   tags = merge(
     var.tags,
@@ -57,7 +58,7 @@ resource "aws_ecs_service" "logging_service" {
 }
 
 resource "aws_lb_target_group" "logging_tg" {
-  name        = "tg-${local.service_name}"
+  name        = "tg-ecs-${local.service_name}"
   port        = 5140
   protocol    = "TCP_UDP"
   target_type = "ip"
@@ -74,7 +75,7 @@ resource "aws_lb_target_group" "logging_tg" {
 }
 
 resource "aws_lb_target_group" "logging_http_tg" {
-  name        = "tg-${local.service_name}-http"
+  name        = "tg-ecs-${local.service_name}-http"
   port        = 8080
   protocol    = "TCP_UDP"
   target_type = "ip"
@@ -92,7 +93,7 @@ resource "aws_lb_target_group" "logging_http_tg" {
 
 
 resource "aws_lb" "logging_lb" {
-  name               = "nlb-${local.service_name}"
+  name               = "nlb-ecs-${local.service_name}"
   internal           = true
   load_balancer_type = "network"
   subnets            = var.subnets
@@ -150,13 +151,15 @@ resource "aws_route53_record" "logging_service_record" {
 }
 
 resource "aws_ecs_task_definition" "service_td" {
-  count = var.task_definition_already_exists ? 0 : 1
+  count                    = var.task_definition_already_exists ? 0 : 1
+  network_mode             = "awsvpc"
+  cpu                      = 4096
+  memory                   = 20480
   family                   = "td-${var.env_name}-${local.task_definition_family}"
+  requires_compatibilities = ["FARGATE"]
   container_definitions    = templatefile("${path.module}/templates/logstash.json.tpl",{ ENV_NAME = var.env_name, SHORT_ENV_NAME = var.short_env_name }) 
-  volume {
-    name      = "service-storage"
-    host_path = "/ecs/service-storage"
-  }
+  task_role_arn            = "${data.aws_iam_role.taskExecutionRole.arn}"
+  execution_role_arn       = "${data.aws_iam_role.taskExecutionRole.arn}"
   lifecycle {
     ignore_changes = all
    }
@@ -217,4 +220,3 @@ resource "aws_security_group_rule" "tcp_8080" {
   security_group_id = aws_security_group.logging_sg.id
   description       = "Allow 8080 TCP from VPC" 
 }
-

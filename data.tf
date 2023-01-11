@@ -1,8 +1,8 @@
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-data "aws_iam_role" "ecs_service_role" {
-  name = "AWSServiceRoleForECS"
+data "aws_iam_role" "taskExecutionRole" {
+  name = "taskExecutionRole"
 }
 
 data "aws_iam_policy_document" "td_assume_role_policy" {
@@ -33,6 +33,7 @@ data "aws_iam_policy_document" "td_role_policy" {
 
 data "aws_ecs_task_definition" "logstash" {
   task_definition = "td-${var.env_name}-logstash"
+  depends_on = [ aws_ecs_task_definition.service_td ]
 }
 
 data "aws_security_group" "selected" {
@@ -40,12 +41,12 @@ data "aws_security_group" "selected" {
 }
 
 data "aws_lb_target_group" "tg-8080" {
-  name = "tg-${var.env_name}-logging-http"
+  name = "tg-ecs-${var.env_name}-logstash-http"
   depends_on  = [aws_lb_target_group.logging_http_tg]
 }
 
 data "aws_lb_target_group" "tg-5140" {
-  name = "tg-${var.env_name}-logging"
+  name = "tg-ecs-${var.env_name}-logstash"
   depends_on  = [aws_lb_target_group.logging_tg]
 }
 

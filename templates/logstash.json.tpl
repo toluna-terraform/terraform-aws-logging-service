@@ -35,7 +35,7 @@
         },
         {
           "name": "api_key",
-          "value": "${api_key}"
+          "value": "${DATADOG_API_KEY}"
         }
       ],
     "privileged": false

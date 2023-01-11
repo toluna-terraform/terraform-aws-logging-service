@@ -32,6 +32,10 @@
         {
           "name": "ENV_NAME",
           "value": "${ENV_NAME}"
+        },
+        {
+          "name": "api_key",
+          "value": "4dad2b369b41b5e9d4a66f2c332e5023}"
         }
       ],
     "privileged": false

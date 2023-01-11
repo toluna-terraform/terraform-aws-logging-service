@@ -32,6 +32,10 @@
         {
           "name": "ENV_NAME",
           "value": "${ENV_NAME}"
+        },
+        {
+          "name": "api_key",
+          "value": "${DATADOG_API_KEY}"
         }
       ],
     "privileged": false

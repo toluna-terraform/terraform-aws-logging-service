@@ -157,7 +157,7 @@ resource "aws_ecs_task_definition" "service_td" {
   memory                   = 20480
   family                   = "td-${var.env_name}-${local.task_definition_family}"
   requires_compatibilities = ["FARGATE"]
-  container_definitions    = templatefile("${path.module}/templates/logstash.json.tpl",{ ENV_NAME = var.env_name, SHORT_ENV_NAME = var.short_env_name }) 
+  container_definitions    = templatefile("${path.module}/templates/logstash.json.tpl",{ ENV_NAME = var.env_name, SHORT_ENV_NAME = var.short_env_name, DATADOG_API_KEY = var.api_key })
   task_role_arn            = "${data.aws_iam_role.taskExecutionRole.arn}"
   execution_role_arn       = "${data.aws_iam_role.taskExecutionRole.arn}"
   lifecycle {

@@ -2,6 +2,10 @@ variable "env_name" {
     type = string
 }
 
+variable "api_key" {
+    type = string
+}
+
 variable "short_env_name" {
     type = string
 }

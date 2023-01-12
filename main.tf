@@ -191,32 +191,13 @@ resource "aws_security_group" "logging_sg" {
   )
 }
 
-resource "aws_security_group_rule" "tcp_5140" {
-  type              = "ingress"
-  from_port         = 5140
-  to_port           = 5140
-  protocol          = "tcp"
-  cidr_blocks       = [data.aws_vpc.selected.cidr_block]
+  resource "aws_security_group_rule" "cidr_rules" {
+  for_each          = var.security_group_rules
   security_group_id = aws_security_group.logging_sg.id
-  description       = "Allow 5140 TCP from VPC" 
-}
-
-resource "aws_security_group_rule" "udp_5140" {
   type              = "ingress"
-  from_port         = 5140
-  to_port           = 5140
-  protocol          = "udp"
-  cidr_blocks       = [data.aws_vpc.selected.cidr_block]
-  security_group_id = aws_security_group.logging_sg.id
-  description       = "Allow 5140 UDP from VPC" 
-}
-
-resource "aws_security_group_rule" "tcp_8080" {
-  type              = "ingress"
-  from_port         = 8080
-  to_port           = 8080
-  protocol          = "tcp"
-  cidr_blocks       = [data.aws_vpc.selected.cidr_block]
-  security_group_id = aws_security_group.logging_sg.id
-  description       = "Allow 8080 TCP from VPC" 
+  from_port         = each.value.from_port
+  to_port           = each.value.to_port
+  protocol          = each.value.protocol
+  cidr_blocks       = each.value.cidr_blocks == "local" ? [data.aws_vpc.selected.cidr_block] : [each.value.cidr_blocks]
+  description       = each.value.description
 }

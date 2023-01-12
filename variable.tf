@@ -30,3 +30,7 @@ variable "tags" {
 variable "task_definition_already_exists" {
   default = true
 }
+
+variable "security_group_rules" {
+  
+}

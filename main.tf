@@ -75,7 +75,7 @@ resource "aws_lb_target_group" "logging_tg" {
 }
 
 resource "aws_lb_target_group" "logging_http_tg" {
-  name        = "tg-ecs-${local.service_name}-http"
+  name        = "tg-ecs-${local.service_name}"
   port        = 8080
   protocol    = "TCP_UDP"
   target_type = "ip"

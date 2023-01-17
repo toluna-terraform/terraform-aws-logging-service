@@ -58,3 +58,7 @@ data "aws_route53_zone" "selected" {
 data "aws_vpc" "selected" {
   id = var.vpc_id
 }
+
+data "aws_ssm_parameter" "opensearch_datadog_api" {
+  name = "opensearch_datadog_api"
+}

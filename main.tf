@@ -58,7 +58,7 @@ resource "aws_ecs_service" "logging_service" {
 }
 
 resource "aws_lb_target_group" "logging_tg" {
-  name        = "tg-ecs-${local.service_name}"
+  name        = "tg-${local.service_name}"
   port        = 5140
   protocol    = "TCP_UDP"
   target_type = "ip"
@@ -75,7 +75,7 @@ resource "aws_lb_target_group" "logging_tg" {
 }
 
 resource "aws_lb_target_group" "logging_http_tg" {
-  name        = "tg-ecs-${local.service_name}"
+  name        = "tg-${local.service_name}"
   port        = 8080
   protocol    = "TCP_UDP"
   target_type = "ip"

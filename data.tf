@@ -41,12 +41,12 @@ data "aws_security_group" "selected" {
 }
 
 data "aws_lb_target_group" "tg-8080" {
-  name = "tg-ecs-${var.env_name}-log"
+  name = "tg-ecs-${var.env_name}-log-8080"
   depends_on  = [aws_lb_target_group.logging_http_tg]
 }
 
 data "aws_lb_target_group" "tg-5140" {
-  name = "tg-ecs-${var.env_name}-log"
+  name = "tg-ecs-${var.env_name}-log-5140"
   depends_on  = [aws_lb_target_group.logging_tg]
 }
 

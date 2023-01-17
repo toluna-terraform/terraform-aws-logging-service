@@ -1,7 +1,7 @@
 locals {
   security_group = "sgr-${var.env_name}-dc-internal"
   load_balancers = [{"target_group_arn":"${data.aws_lb_target_group.tg-8080.arn}","container_name":"logstash","container_port":8080},{"target_group_arn":"${data.aws_lb_target_group.tg-5140.arn}","container_name":"logstash","container_port":5140}]
-  service_name   = "${var.env_name}-logstash"
+  service_name   = "${var.env_name}-log"
   ecs_name   = "${var.env_name}-devops-tools"
   task_definition_family = "logstash"
 }

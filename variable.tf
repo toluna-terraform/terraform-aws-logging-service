@@ -2,9 +2,6 @@ variable "env_name" {
     type = string
 }
 
-variable "api_key" {
-    type = string
-}
 
 variable "short_env_name" {
     type = string
@@ -29,4 +26,8 @@ variable "tags" {
 
 variable "task_definition_already_exists" {
   default = true
+}
+
+variable "security_group_rules" {
+  
 }

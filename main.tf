@@ -1,7 +1,7 @@
 locals {
   security_group = "sgr-${var.env_name}-dc-internal"
   load_balancers = [{"target_group_arn":"${data.aws_lb_target_group.tg-8080.arn}","container_name":"logstash","container_port":8080},{"target_group_arn":"${data.aws_lb_target_group.tg-5140.arn}","container_name":"logstash","container_port":5140}]
-  service_name   = "${var.env_name}-logstash"
+  service_name   = "${var.env_name}-log"
   ecs_name   = "${var.env_name}-devops-tools"
   task_definition_family = "logstash"
 }
@@ -58,7 +58,7 @@ resource "aws_ecs_service" "logging_service" {
 }
 
 resource "aws_lb_target_group" "logging_tg" {
-  name        = "tg-ecs-${local.service_name}"
+  name        = "tg-ecs-${local.service_name}-5140"
   port        = 5140
   protocol    = "TCP_UDP"
   target_type = "ip"
@@ -75,7 +75,7 @@ resource "aws_lb_target_group" "logging_tg" {
 }
 
 resource "aws_lb_target_group" "logging_http_tg" {
-  name        = "tg-ecs-${local.service_name}-http"
+  name        = "tg-ecs-${local.service_name}-8080"
   port        = 8080
   protocol    = "TCP_UDP"
   target_type = "ip"
@@ -157,7 +157,7 @@ resource "aws_ecs_task_definition" "service_td" {
   memory                   = 20480
   family                   = "td-${var.env_name}-${local.task_definition_family}"
   requires_compatibilities = ["FARGATE"]
-  container_definitions    = templatefile("${path.module}/templates/logstash.json.tpl",{ ENV_NAME = var.env_name, SHORT_ENV_NAME = var.short_env_name, DATADOG_API_KEY = var.api_key })
+  container_definitions    = templatefile("${path.module}/templates/logstash.json.tpl",{ ENV_NAME = var.env_name, SHORT_ENV_NAME = var.short_env_name, DATADOG_API_KEY = data.aws_ssm_parameter.opensearch_datadog_api.value })
   task_role_arn            = "${data.aws_iam_role.taskExecutionRole.arn}"
   execution_role_arn       = "${data.aws_iam_role.taskExecutionRole.arn}"
   lifecycle {
@@ -191,32 +191,13 @@ resource "aws_security_group" "logging_sg" {
   )
 }
 
-resource "aws_security_group_rule" "tcp_5140" {
-  type              = "ingress"
-  from_port         = 5140
-  to_port           = 5140
-  protocol          = "tcp"
-  cidr_blocks       = [data.aws_vpc.selected.cidr_block]
+  resource "aws_security_group_rule" "cidr_rules" {
+  for_each          = var.security_group_rules
   security_group_id = aws_security_group.logging_sg.id
-  description       = "Allow 5140 TCP from VPC" 
-}
-
-resource "aws_security_group_rule" "udp_5140" {
   type              = "ingress"
-  from_port         = 5140
-  to_port           = 5140
-  protocol          = "udp"
-  cidr_blocks       = [data.aws_vpc.selected.cidr_block]
-  security_group_id = aws_security_group.logging_sg.id
-  description       = "Allow 5140 UDP from VPC" 
-}
-
-resource "aws_security_group_rule" "tcp_8080" {
-  type              = "ingress"
-  from_port         = 8080
-  to_port           = 8080
-  protocol          = "tcp"
-  cidr_blocks       = [data.aws_vpc.selected.cidr_block]
-  security_group_id = aws_security_group.logging_sg.id
-  description       = "Allow 8080 TCP from VPC" 
+  from_port         = each.value.from_port
+  to_port           = each.value.to_port
+  protocol          = each.value.protocol
+  cidr_blocks       = each.value.cidr_blocks == "local" ? [data.aws_vpc.selected.cidr_block] : [each.value.cidr_blocks]
+  description       = each.value.description
 }

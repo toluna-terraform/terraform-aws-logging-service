@@ -1,7 +1,7 @@
 locals {
   security_group = "sgr-${var.env_name}-dc-internal"
   load_balancers = [{"target_group_arn":"${data.aws_lb_target_group.tg-8080.arn}","container_name":"logstash","container_port":8080},{"target_group_arn":"${data.aws_lb_target_group.tg-5140.arn}","container_name":"logstash","container_port":5140}]
-  service_name   = "${var.env_name}-log"
+  service_name   = "${var.env_name}-logstash"
   ecs_name   = "${var.env_name}-devops-tools"
   task_definition_family = "logstash"
 }
@@ -58,7 +58,7 @@ resource "aws_ecs_service" "logging_service" {
 }
 
 resource "aws_lb_target_group" "logging_tg" {
-  name        = "tg-ecs-${local.service_name}-5140"
+  name        = "tg-ecs-${var.env_name}-5140"
   port        = 5140
   protocol    = "TCP_UDP"
   target_type = "ip"
@@ -75,7 +75,7 @@ resource "aws_lb_target_group" "logging_tg" {
 }
 
 resource "aws_lb_target_group" "logging_http_tg" {
-  name        = "tg-ecs-${local.service_name}-8080"
+  name        = "tg-ecs-${var.env_name}-8080"
   port        = 8080
   protocol    = "TCP_UDP"
   target_type = "ip"

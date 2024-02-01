@@ -8,8 +8,7 @@ locals {
 
 resource "aws_ecs_cluster" "logging_cluster" {
   name = "ecs-${local.ecs_name}"
-  capacity_providers = ["FARGATE"]
-
+  
   setting {
     name  = "containerInsights"
     value = "enabled"
